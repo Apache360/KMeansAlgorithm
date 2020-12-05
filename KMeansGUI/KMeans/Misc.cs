@@ -10,9 +10,15 @@ namespace KMeansProject
 
         static Misc()
         {
-            centroidColors = new Color[2];
+            centroidColors = new Color[8];
             centroidColors[0] = Color.Red;
             centroidColors[1] = Color.Blue;
+            centroidColors[2] = Color.Green;
+            centroidColors[3] = Color.Cyan;
+            centroidColors[4] = Color.Brown;
+            centroidColors[5] = Color.Orange;
+            centroidColors[6] = Color.Pink;
+            centroidColors[7] = Color.Purple;
         }
 
         public static List<double[]> Clone(List<double[]> array)

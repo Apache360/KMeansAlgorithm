@@ -11,9 +11,9 @@ D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\bin\Debug\KMeansGUI.exe.config
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\bin\Debug\KMeansGUI.exe
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\bin\Debug\KMeansGUI.pdb
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.csprojAssemblyReference.cache
-D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.Form1.resources
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.Properties.Resources.resources
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.csproj.GenerateResource.cache
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.csproj.CoreCompileInputs.cache
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.exe
 D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.pdb
+D:\_Visual Studio projects\c#\KMeansGUI\KMeansGUI\obj\Debug\KMeansGUI.KmeansForm.resources

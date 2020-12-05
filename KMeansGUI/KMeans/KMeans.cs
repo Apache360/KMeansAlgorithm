@@ -49,7 +49,7 @@ namespace KMeansProject
                     double minDistance = Double.MaxValue;
                     for (int k = 0; k < centroidList.Count; k++)
                     {
-                        double distance = _distance.Run(centroidList[k].Array, point);
+                        double distance = _distance.Run(centroidList[k].array, point);
                         if (distance < minDistance)
                         {
                             closestIndex = k;

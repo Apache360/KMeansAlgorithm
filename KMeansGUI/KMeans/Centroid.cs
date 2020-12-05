@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KMeansGUI;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
@@ -7,36 +8,30 @@ namespace KMeansProject
 {
     public class Centroid
     {
-        private double[] _array;
-        public double[] Array
-        {
-            get { return _array; }
-        }
-
+        public double[] array;
+        private List<double[]> _oldPointsList;
+        private List<double[]> _closestPointsList;
         private Color _color;
+        private static Random random = new Random();
 
         public void DrawMe(PaintEventArgs e)
         {
+            KmeansForm form = new KmeansForm();
             Graphics g = e.Graphics;
-            g.FillEllipse(
-            new SolidBrush(_color),
-            (float)_array[0],(float)_array[1], 15, 15);
+            form.drawLegend();
+            g.FillEllipse(new SolidBrush(_color),(float)array[0],400-(float)array[1], 15, 15);
 
             foreach(double[] point in _closestPointsList)
             {
-                g.DrawEllipse(new Pen(_color, 2.0f), (float)point[0], (float)point[1], 10, 10);
+                g.DrawEllipse(new Pen(_color, 2.0f), (float)point[0], 400-(float)point[1], 10, 10);
             }
+
         }
 
-        private List<double[]> _oldPointsList;
-
-        private List<double[]> _closestPointsList;
         public void addPoint(double[] closestArray)
         {
             _closestPointsList.Add(closestArray);
         }
-
-        private static Random random = new Random();
 
         public Centroid(double[][] dataSet, Color color)
         {
@@ -44,14 +39,14 @@ namespace KMeansProject
 
             List<Tuple<double, double>> minMaxPoints = Misc.GetMinMaxPoints(dataSet);
 
-            _array = new double[minMaxPoints.Count];
+            array = new double[minMaxPoints.Count];
             int i = 0;
             foreach (Tuple<double, double> tuple in minMaxPoints)
             {
                 double minimum = tuple.Item1;
                 double maximum = tuple.Item2;
                 double element = random.NextDouble() * (maximum - minimum) + minimum;
-                _array[i] = element;
+                array[i] = element;
                 i++;
             }
            
@@ -76,7 +71,7 @@ namespace KMeansProject
                 resultVector.Add(sum);
             }
 
-            _array = resultVector.ToArray();
+            array = resultVector.ToArray();
         }
 
         public bool HasChanged()
@@ -110,7 +105,7 @@ namespace KMeansProject
 
         public override string ToString()
         {
-            return String.Join(",", _array);
+            return String.Join(",", array);
         }
     }
 }
