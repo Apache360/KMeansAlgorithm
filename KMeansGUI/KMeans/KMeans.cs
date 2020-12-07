@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace KMeansProject
+namespace KMeansGUI
 {
     public delegate void OnUpdateProgress(object sender, KMeansEventArgs eventArgs);
     public class KMeans
@@ -16,7 +16,7 @@ namespace KMeansProject
         {
             if (UpdateProgress != null)
                 UpdateProgress(this, eventArgs);
-            Thread.Sleep(1500);
+            Thread.Sleep(400);
         }
 
         public KMeans(int k, IDistance distance)
@@ -25,13 +25,17 @@ namespace KMeansProject
             _distance = distance;
         }
 
-        public Centroid[] Run(double[][] dataSet)
+        public KMeans()
         {
-            List<Centroid> centroidList = new List<Centroid>();
+        }
 
+        public List<Centroid> centroidList;
+        public Centroid[] Run(List<Item> dataSet)
+        {
+            centroidList = new List<Centroid>();
             for (int i=0;i<_k;i++)
             {
-                Centroid centroid = new Centroid(dataSet,Misc.centroidColors[i]);
+                Centroid centroid = new Centroid(dataSet,Misc.centroidColors[i], centroidList.Count);
                 centroidList.Add(centroid);
             }
 
@@ -42,21 +46,21 @@ namespace KMeansProject
                 foreach (Centroid centroid in centroidList)
                     centroid.Reset();
 
-                for (int i = 0; i < dataSet.GetLength(0); i++)
+                for (int i = 0; i < dataSet.Count; i++)
                 {
-                    double[] point = dataSet[i];
+                    Item item = dataSet[i];
                     int closestIndex = -1;
                     double minDistance = Double.MaxValue;
                     for (int k = 0; k < centroidList.Count; k++)
                     {
-                        double distance = _distance.Run(centroidList[k].array, point);
+                        double distance = _distance.Run(centroidList[k].array, item);
                         if (distance < minDistance)
                         {
                             closestIndex = k;
                             minDistance = distance;
                         }
                     }
-                    centroidList[closestIndex].addPoint(point);
+                    centroidList[closestIndex].addItem(item);
                 }
 
                 foreach (Centroid centroid in centroidList)

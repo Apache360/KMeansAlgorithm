@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 
-namespace KMeansProject
+namespace KMeansGUI
 {
     public static class Misc
     {
@@ -10,41 +10,33 @@ namespace KMeansProject
 
         static Misc()
         {
-            centroidColors = new Color[8];
+            centroidColors = new Color[3];
             centroidColors[0] = Color.Red;
-            centroidColors[1] = Color.Blue;
-            centroidColors[2] = Color.Green;
-            centroidColors[3] = Color.Cyan;
-            centroidColors[4] = Color.Brown;
-            centroidColors[5] = Color.Orange;
-            centroidColors[6] = Color.Pink;
-            centroidColors[7] = Color.Purple;
+            centroidColors[1] = Color.LimeGreen;
+            centroidColors[2] = Color.DodgerBlue;
         }
 
-        public static List<double[]> Clone(List<double[]> array)
+        public static List<Item> Clone(List<Item> array)
         {
-            List<double[]> resultList = new List<double[]>();
-            foreach (double[] tempArray in array)
+            List<Item> resultList = new List<Item>();
+            foreach (Item item in array)
             {
-                double[] newArray = new double[tempArray.Length];
-                for (int i = 0; i < tempArray.Length; i++)
-                    newArray[i] = tempArray[i];
-                resultList.Add(newArray);
+                resultList.Add(new Item(item.id, item.point));
             }
             return resultList;
         }
 
-        public static List<Tuple<double, double>> GetMinMaxPoints(double[][] dataset)
+        public static List<Tuple<double, double>> GetMinMaxPoints(List<Item> dataSet)
         {
             List<Tuple<double, double>> result = new List<Tuple<double, double>>();
 
-            for (int j = 0; j < dataset[0].GetLength(0); j++)
+            for (int j = 0; j < dataSet[0].point.Length; j++)
             {
                 double min = Double.MaxValue;
                 double max = Double.MinValue;
-                for (int i = 0; i < dataset.Length; i++)
+                for (int i = 0; i < dataSet.Count; i++)
                 {
-                    double element = dataset[i][j];
+                    double element = dataSet[i].point[j];
                     if (element < min)
                         min = element;
                     if (element > max)
@@ -55,9 +47,9 @@ namespace KMeansProject
             return result;
         }
 
-        public static double GenerateRandomDouble(Random random, double minimum, double maximum)
+        public static double GenerateRandomDouble(Double random, double minimum, double maximum)
         {
-            return random.NextDouble() * (maximum - minimum) + minimum;
+            return Math.Round( random,3) * (maximum - minimum) + minimum;
         }
     }
 }

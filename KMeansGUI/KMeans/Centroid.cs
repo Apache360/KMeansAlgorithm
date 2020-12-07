@@ -4,14 +4,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace KMeansProject
+namespace KMeansGUI
 {
     public class Centroid
     {
         public double[] array;
-        private List<double[]> _oldPointsList;
-        private List<double[]> _closestPointsList;
-        private Color _color;
+        private List<Item> _oldItemsList;
+        public List<Item> closestItemsList;
+        public Color color;
         private static Random random = new Random();
 
         public void DrawMe(PaintEventArgs e)
@@ -19,55 +19,91 @@ namespace KMeansProject
             KmeansForm form = new KmeansForm();
             Graphics g = e.Graphics;
             form.drawLegend();
-            g.FillEllipse(new SolidBrush(_color),(float)array[0],400-(float)array[1], 15, 15);
 
-            foreach(double[] point in _closestPointsList)
+            foreach (Item item in closestItemsList)
             {
-                g.DrawEllipse(new Pen(_color, 2.0f), (float)point[0], 400-(float)point[1], 10, 10);
+                g.DrawEllipse(new Pen(color, 2.0f), (float)item.point[0], 400-(float)item.point[1], 8, 8);
             }
 
+            g.FillEllipse(new SolidBrush(color), (float)array[0], 400 - (float)array[1], 15, 15);
+            g.DrawEllipse(new Pen(Color.Black, 2.0f), (float)array[0], 400 - (float)array[1], 15, 15);
         }
 
-        public void addPoint(double[] closestArray)
+        public void addItem(Item closestArray)
         {
-            _closestPointsList.Add(closestArray);
+            closestItemsList.Add(closestArray);
         }
 
-        public Centroid(double[][] dataSet, Color color)
+        public int centroidId;
+        public Centroid(List<Item> dataSet, Color color, int centroidId)
         {
-            _color = color;
-
+            this.color = color;
+            this.centroidId = centroidId;
             List<Tuple<double, double>> minMaxPoints = Misc.GetMinMaxPoints(dataSet);
 
             array = new double[minMaxPoints.Count];
-            int i = 0;
-            foreach (Tuple<double, double> tuple in minMaxPoints)
+            switch (centroidId)
             {
-                double minimum = tuple.Item1;
-                double maximum = tuple.Item2;
+                case 0:
+                    array =new double [2]{ random.NextDouble()*400/3, 2 * 400/3+random.NextDouble() * 400 / 3 };
+                    break;
+                case 1:
+                    array = new double[2] { 2*400/3+random.NextDouble() * 400 / 3, random.NextDouble() * 400 / 3 };
+                    break;
+                case 2:
+                    array = new double[2] { 1 * 400 / 3 + random.NextDouble() * 400 / 3, 1 * 400 / 3 + random.NextDouble() * 400 / 3 };
+                    break;
+                default:
+                    break;
+            }
+
+            /*int i = 0;
+            foreach (Tuple<double, double> point in minMaxPoints)
+            {
+                double minimum = 0;
+                double maximum = 0;
+                switch (centroidId)
+                {
+                    case 0:
+                        minimum = 0;
+                        maximum = 200;
+                        break;
+                    case 1:
+                        minimum = 350;
+                        maximum = 400;
+                        break;
+                    case 2:
+                        minimum = point.Item1;
+                        maximum = point.Item2;
+                        break;
+                    default:
+                        break;
+                }
+                Console.WriteLine(centroidId+"  "+minimum + "  "+ maximum);
                 double element = random.NextDouble() * (maximum - minimum) + minimum;
+
                 array[i] = element;
                 i++;
-            }
-           
-            _oldPointsList = new List<double[]>();
-            _closestPointsList = new List<double[]>();
+            }*/
+
+            _oldItemsList = new List<Item>();
+            closestItemsList = new List<Item>();
         }
 
         public void MoveCentroid()
         {
             List<double> resultVector = new List<double>();
 
-            if (_closestPointsList.Count == 0) return;
+            if (closestItemsList.Count == 0) return;
 
-            for(int j = 0; j < _closestPointsList[0].GetLength(0); j++)
+            for(int j = 0; j < closestItemsList[0].point.GetLength(0); j++)
             {
                 double sum = 0.0;
-                for(int i = 0; i < _closestPointsList.Count; i++)
+                for(int i = 0; i < closestItemsList.Count; i++)
                 {
-                    sum += _closestPointsList[i][j];
+                    sum += closestItemsList[i].point[j];
                 }
-                sum /= _closestPointsList.Count;
+                sum /= closestItemsList.Count;
                 resultVector.Add(sum);
             }
 
@@ -78,16 +114,16 @@ namespace KMeansProject
         {
             bool result = true;
 
-            if (_oldPointsList.Count != _closestPointsList.Count) return true;
-            if (_oldPointsList.Count == 0 || _closestPointsList.Count == 0) return false;
+            if (_oldItemsList.Count != closestItemsList.Count) return true;
+            if (_oldItemsList.Count == 0 || closestItemsList.Count == 0) return false;
 
-            for(int i=0; i < _closestPointsList.Count; i++)
+            for(int i=0; i < closestItemsList.Count; i++)
             {
-                double[] oldPoit = _oldPointsList[i];
-                double[] currentPoint = _closestPointsList[i];
+                double[] oldPoint = _oldItemsList[i].point;
+                double[] currentPoint = closestItemsList[i].point;
 
-                for(int j=0;j<oldPoit.Length;j++)
-                    if (oldPoit[j] != currentPoint[j])
+                for(int j=0;j<oldPoint.Length;j++)
+                    if (oldPoint[j] != currentPoint[j])
                     {
                         result = false;
                         break;
@@ -99,8 +135,8 @@ namespace KMeansProject
 
         public void Reset()
         {
-            _oldPointsList = Misc.Clone(_closestPointsList);
-            _closestPointsList.Clear();
+            _oldItemsList = Misc.Clone(closestItemsList);
+            closestItemsList.Clear();
         }
 
         public override string ToString()

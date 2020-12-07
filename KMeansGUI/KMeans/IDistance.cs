@@ -1,7 +1,7 @@
-﻿namespace KMeansProject
+﻿namespace KMeansGUI
 {
     public interface IDistance
     {
-        double Run(double[] array1, double[] array2);
+        double Run(double[] array1, Item array2);
     }
 }

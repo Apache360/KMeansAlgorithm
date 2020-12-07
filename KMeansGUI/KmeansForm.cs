@@ -1,36 +1,36 @@
-﻿using KMeansProject;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace KMeansGUI
 {
     public partial class KmeansForm : Form
     {
-        private KMeans objKMeans;
-        private List<double[]> dataSetPoints;
-        private List<double[]> dataSetRawPoints;
+        public KMeans objKMeans;
         private BackgroundWorker objBackgroundWorker;
         KMeansEventArgs kmeansEA;
         private List<Item> dataSetItems;
+        private string resultDataSet;
+        public Centroid[] centroids;
+        FileStream fileStreamInput = null;
+        string inputFileName = null;
+
         public KmeansForm()
         {
             InitializeComponent();
         }
 
-        private void buttonRun_Click(object sender, EventArgs e)
+        private void buttonRandomRun_Click(object sender, EventArgs e)
         {
-            buttonRun.Enabled = false;            
+            buttonRandomRun.Enabled = false;            
+            buttonRun.Enabled = false;
+            richTextBox1.Text = "";
 
             objKMeans = new KMeans(Convert.ToInt32(numericUpDown2.Value), new EuclideanDistance());
+            setRandomData();
 
             picImage.Invalidate();
 
@@ -40,7 +40,31 @@ namespace KMeansGUI
             objBackgroundWorker.RunWorkerCompleted += ObjBackgroundWorker_RunWorkerCompleted;
             objBackgroundWorker.ProgressChanged += ObjBackgroundWorker_ProgressChanged;
 
-            objBackgroundWorker.RunWorkerAsync(dataSetPoints.ToArray());
+            objBackgroundWorker.RunWorkerAsync(dataSetItems);
+
+        }
+
+        private void buttonRun_Click(object sender, EventArgs e)
+        {
+            buttonRun.Enabled = false;
+            buttonRandomRun.Enabled = false;
+
+            objKMeans = new KMeans(Convert.ToInt32(numericUpDown2.Value), new EuclideanDistance());
+            if (fileStreamInput!=null)
+            {
+                fileStreamInput.Position = 0;
+                setData(fileStreamInput);
+            }
+
+            picImage.Invalidate();
+
+            objBackgroundWorker = new BackgroundWorker();
+            objBackgroundWorker.WorkerReportsProgress = true;
+            objBackgroundWorker.DoWork += ObjBackgroundWorker_DoWork;
+            objBackgroundWorker.RunWorkerCompleted += ObjBackgroundWorker_RunWorkerCompleted;
+            objBackgroundWorker.ProgressChanged += ObjBackgroundWorker_ProgressChanged;
+
+            objBackgroundWorker.RunWorkerAsync(dataSetItems);
         }
 
         private void ObjBackgroundWorker_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -62,16 +86,22 @@ namespace KMeansGUI
         {
             Centroid[] result = e.Result as Centroid[];
             Console.WriteLine("Work is done!");
-            buttonRun.Enabled = true;
+            buttonRandomRun.Enabled = true;
+            if (inputFileName!=null) buttonRun.Enabled = true;
+
             drawLegend();
+            if (numericUpDown1.Value <= 200) writeResult();
+            else richTextBox1.Text = "There are more than 200 items.\nThe output is on demand.";
         }
 
         private void ObjBackgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            double[][] inputDataset = e.Argument as double[][];
-            objKMeans.UpdateProgress +=(x,y)=> {
-                objBackgroundWorker.ReportProgress(0,y); };
-            e.Result = objKMeans.Run(inputDataset);
+            List<Item> inputDataset = e.Argument as List<Item>;
+
+            objKMeans.UpdateProgress += (x, y) => objBackgroundWorker.ReportProgress(0, y);
+            centroids = objKMeans.Run(inputDataset);
+            e.Result = centroids;
+            setResultDataSet();
         }
 
         private void picImage_Paint(object sender, PaintEventArgs e)
@@ -84,9 +114,9 @@ namespace KMeansGUI
 
             if (kmeansEA.Dataset == null) return;
 
-            foreach(double[] point in kmeansEA.Dataset)
+            foreach(Item item in kmeansEA.Dataset)
             {
-                g.DrawEllipse(new Pen(Color.Gray, 2.0f), (float)point[0], 400-(float)point[1], 10, 10);
+                g.DrawEllipse(new Pen(Color.Gray, 2.0f), (float)item.point[0], 400-(float)item.point[1], 8, 8);
             }
         }
 
@@ -97,13 +127,13 @@ namespace KMeansGUI
 
         private void openFile()
         {
-            FileStream fileStreamInput = null;
-            string inputFileName = null; 
+            fileStreamInput = null;
+            inputFileName = null;
             using (OpenFileDialog ofd = new OpenFileDialog() { Filter = "All files|*.*|CSV|*.csv" })
             {
                 if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    buttonRun.Enabled = true;
+                    buttonRandomRun.Enabled = true;
 
                     inputFileName = ofd.FileName;
                     fileStreamInput = new FileStream(inputFileName, FileMode.Open, FileAccess.Read);
@@ -114,7 +144,8 @@ namespace KMeansGUI
                     {
                         case "csv":
                             setData(fileStreamInput);
-                            //setRandomData();
+                            buttonRun.Enabled = true;
+                            textBox1.Text = inputFileName;
                             break;
                         default:
                             break;
@@ -125,53 +156,38 @@ namespace KMeansGUI
 
         private void setRandomData()
         {
-           Random objRandom = new Random();
-            dataSetPoints = new List<double[]>();
-            /*for (int i = 0; i < (int)numericUpDown1.Value; i++)
+            Random objRandom = new Random();
+            dataSetItems = new List<Item>();
+            for (int i = 0; i < (int)numericUpDown1.Value; i++)
             {
+                double chance1 = objRandom.NextDouble();
+                //double chance1 = Math.Sin(((objRandom.NextDouble() / (Math.PI * 10)) * 90));
+                double chance2 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90) / 1.5;
+                double chance3 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90) / 1.5;
+                /*double chance2 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90);
+                double chance3 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90);*/
+
+                double shift1, shift2;
+                if (chance1<0.5)
+                {
+                    shift1 = chance1 * chance2;
+                    shift2 = chance1 * chance3;
+                }
+                else
+                {
+                    shift1 = (1 - chance1) * chance2;
+                    shift2 = (1 - chance1) * chance3;
+                }
+
                 double[] point = new double[2];
-                for (int j = 0; j < 2; j++)
-                {
-                    point[j] = Misc.GenerateRandomDouble(objRandom, 0, 400);
-                }
-                dataSetList.Add(point);
+                point[0] = Math.Round(3 * (chance1 + shift1), 3);
+                point[1] = Math.Round(100 * ((1 - chance1) + shift2), 3);
+                //point[0] = Misc.GenerateRandomDouble(chance2, 0, 3);
+                //point[1] = Misc.GenerateRandomDouble(chance3, 0, 100);
+                Item item = new Item(i.ToString(),point);
+                dataSetItems.Add(item);
             }
-            for (int i = 0; i < dataSetList.Count; i++)
-            {
-                for (int j = 0; j < dataSetList[i].Length; j++)
-                {
-                    Console.WriteLine(dataSetList[i][j]);
-                }
-            }*/
-
-
-
-            dataSetPoints.Add(new double[2] { 10, 10 });
-            dataSetPoints.Add(new double[2] { 70, 10 });
-            dataSetPoints.Add(new double[2] { 130, 10 });
-            dataSetPoints.Add(new double[2] { 10, 70 });
-            dataSetPoints.Add(new double[2] { 70, 70 });
-            dataSetPoints.Add(new double[2] { 130, 70 });
-            dataSetPoints.Add(new double[2] { 200, 70 });
-            dataSetPoints.Add(new double[2] { 70, 130 });
-            dataSetPoints.Add(new double[2] { 130, 130 });
-            dataSetPoints.Add(new double[2] { 200, 130 });
-            dataSetPoints.Add(new double[2] { 270, 130 });
-            dataSetPoints.Add(new double[2] { 70, 200 });
-            dataSetPoints.Add(new double[2] { 130, 200 });
-            dataSetPoints.Add(new double[2] { 200, 200 });
-            dataSetPoints.Add(new double[2] { 270, 200 });
-            dataSetPoints.Add(new double[2] { 130, 270 });
-            dataSetPoints.Add(new double[2] { 200, 270 });
-            dataSetPoints.Add(new double[2] { 270, 270 });
-            dataSetPoints.Add(new double[2] { 340, 270 });
-            dataSetPoints.Add(new double[2] { 200, 340 });
-            dataSetPoints.Add(new double[2] { 270, 340 });
-            dataSetPoints.Add(new double[2] { 340, 340 });
-            dataSetPoints.Add(new double[2] { 390, 340 });
-            dataSetPoints.Add(new double[2] { 270, 390 });
-            dataSetPoints.Add(new double[2] { 340, 390 });
-            dataSetPoints.Add(new double[2] { 390, 390 });
+            normalizeData();
         }
 
         private void setData(FileStream fileStreamInput)
@@ -214,17 +230,9 @@ namespace KMeansGUI
                             default:
                                 break;
                         }
-                    }
-                    
+                    }                    
                 }
             }
-
-            dataSetRawPoints = new List<double[]>();
-            for (int i = 0; i < dataSetItems.Count; i++)
-            {
-                dataSetRawPoints.Add(new double[2] { dataSetItems[i].point[0], dataSetItems[i].point[1] });
-            }
-
             normalizeData();
         }
 
@@ -233,27 +241,120 @@ namespace KMeansGUI
             int width = picImage.Width;
             int height = picImage.Height;
             maxX1 = maxX2 = 0;
-            for (int i = 0; i < dataSetRawPoints.Count; i++)
+            for (int i = 0; i < dataSetItems.Count; i++)
             {
-                if (dataSetRawPoints[i][0]>maxX1)
+                if (dataSetItems[i].point[0]>maxX1)
                 {
-                    maxX1 = dataSetRawPoints[i][0];
+                    maxX1 = dataSetItems[i].point[0];
                 }
-                if (dataSetRawPoints[i][1] > maxX2)
+                if (dataSetItems[i].point[1] > maxX2)
                 {
-                    maxX2 = dataSetRawPoints[i][1];
+                    maxX2 = dataSetItems[i].point[1];
                 }
             }
             widthScale = width / (maxX1+ 0.1*maxX1);
             heightScale = height / (maxX2+0.1*maxX2);
-            dataSetPoints = new List<double[]>();
-            for (int i = 0; i < dataSetRawPoints.Count; i++)
+            for (int i = 0; i < dataSetItems.Count; i++)
             {
-                dataSetPoints.Add(new double[2] { dataSetRawPoints[i][0]* widthScale, dataSetRawPoints[i][1]* heightScale });
+                dataSetItems[i].point= new double[2] {dataSetItems[i].point[0]* widthScale, dataSetItems[i].point[1]* heightScale };
             }
         }
 
-        private double widthScale = 0, heightScale= 0,maxX1 = 0, maxX2 = 0;
+        private void setResultDataSet()
+        {
+            for (int i = 0; i < centroids.Length; i++)
+            {
+                for (int j = 0; j < centroids[i].closestItemsList.Count; j++)
+                {
+                    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US"); 
+                    resultDataSet += i + ","
+                        + (centroids[i].closestItemsList[j].id) + ","
+                        + (centroids[i].closestItemsList[j].point[0]/widthScale) + ","
+                        + (centroids[i].closestItemsList[j].point[1] / heightScale) + "\n";
+                }
+            }
+        }
+
+        private void writeResult()
+        {
+            richTextBox1.Clear();
+            resultDataSet = "";
+            for (int i = 0; i < centroids.Length; i++)
+            {
+                for (int j = 0; j < centroids[i].closestItemsList.Count; j++)
+                {
+                    System.Threading.Thread.CurrentThread.CurrentCulture = new System.Globalization.CultureInfo("en-US");
+                    string str = i + ","
+                        + (centroids[i].closestItemsList[j].id) + ","
+                        + (centroids[i].closestItemsList[j].point[0] / widthScale) + ","
+                        + (centroids[i].closestItemsList[j].point[1] / heightScale) + "\n";
+
+                    int start = richTextBox1.Text.Length;
+                    int length = str.Length;
+                    richTextBox1.AppendText(str);
+                    resultDataSet += str;
+                    richTextBox1.Select(start, length);
+                    richTextBox1.SelectionColor = centroids[i].color;
+                }
+            }
+            richTextBox1.Update();
+        }
+
+        private void saveFile()
+        {
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = "All files|*.*|CSV files|*.csv";
+            bool correctFormatSelected = true;
+            if (correctFormatSelected)
+            {
+                if (sfd.ShowDialog() == DialogResult.OK && sfd.FileName.Length > 0)
+                {
+                    Cursor.Current = Cursors.WaitCursor;
+
+                    writeData(sfd.FileName);
+
+                    Cursor.Current = Cursors.Default;
+                    Form formSucces = new Form();
+                    formSucces.StartPosition = FormStartPosition.CenterParent;
+                    formSucces.Size = new System.Drawing.Size(250, 100); ;
+                    formSucces.MinimumSize = formSucces.MaximumSize = formSucces.Size;
+                    Label labelSucces = new Label();
+                    labelSucces.Location = new Point(40, 25);
+                    labelSucces.Size = new System.Drawing.Size(200, 25); ;
+                    formSucces.Controls.Add(labelSucces);
+                    labelSucces.Text = "Process is succesfully finised!";
+                    formSucces.ShowDialog();
+                }
+            }
+        }
+
+        private void writeData(string file)
+        {
+            try
+            {
+                using (StreamWriter sw = new StreamWriter(file+".csv", false, System.Text.Encoding.Default))
+                {
+                    sw.WriteLine(resultDataSet);
+                }
+                Console.WriteLine("Запись выполнена");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        private void buttonResult_Click(object sender, EventArgs e)
+        {
+            writeResult();
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            saveFile();
+        }
+
+        private double widthScale = 0, heightScale = 0, maxX1 = 0, maxX2 = 0;
         public void drawLegend()
         {
             Graphics g = picImage.CreateGraphics();
@@ -263,22 +364,24 @@ namespace KMeansGUI
             Font drawFontValue = new Font("Arial", 10);
             Font drawFontValueBold = new Font("Arial", 10, FontStyle.Bold);
             SolidBrush drawBrush = new SolidBrush(Color.Black);
-            StringFormat drawFormat = new StringFormat(); 
+            StringFormat drawFormat = new StringFormat();
+            int picHeight = picImage.Height;
+            int picWidth = picImage.Width;
 
-            g.DrawLine(penAdditional, new Point(0, picImage.Height), new Point(picImage.Width, picImage.Height));
-            g.DrawLine(penAdditional, new Point(0, picImage.Height), new Point(0, 0));
+            g.DrawLine(penAdditional, new Point(0, picHeight), new Point(picWidth, picHeight));
+            g.DrawLine(penAdditional, new Point(0, picHeight), new Point(0, 0));
             for (int i = 0; i < 11; i++)
             {
-                g.DrawLine(penAdditional, new Point(0, i*picImage.Height/11), new Point(10, i * picImage.Height / 11));
-                g.DrawLine(penAdditional, new Point(i * picImage.Width / 11, picImage.Height-10), new Point(i * picImage.Width / 11, picImage.Height));
-                g.DrawLine(penDotted, new Point(0, i * picImage.Height / 11), new Point(picImage.Width, i * picImage.Height / 11));
-                g.DrawLine(penDotted, new Point(i * picImage.Width / 11, 0), new Point(i * picImage.Width / 11, picImage.Height));
+                g.DrawLine(penAdditional, new Point(0, i* picHeight / 11), new Point(10, i * picHeight / 11));
+                g.DrawLine(penAdditional, new Point(i * picWidth / 11, picHeight - 10), new Point(i * picWidth / 11, picHeight));
+                g.DrawLine(penDotted, new Point(0, i * picHeight / 11), new Point(picWidth, i * picHeight / 11));
+                g.DrawLine(penDotted, new Point(i * picWidth / 11, 0), new Point(i * picWidth / 11, picHeight));
                 if (i!=0&&i!=11)
                 {
-                    g.DrawString(Math.Round((maxX1 / 10)*i,2).ToString(), drawFontValue, drawBrush, new Point((i * picImage.Width / 11)-5, picImage.Height - 25));
-                    g.DrawString(Math.Round((maxX2 / 10)*i,2).ToString(), drawFontValue, drawBrush, new Point(15, ((11-i) * picImage.Height / 11)-10));
+                    g.DrawString(Math.Round((maxX1 / 10)*i,2).ToString(), drawFontValue, drawBrush, new Point((i * picWidth / 11)-5, picHeight - 25));
+                    g.DrawString(Math.Round((maxX2 / 10)*i,2).ToString(), drawFontValue, drawBrush, new Point(15, ((11-i) * picHeight / 11)-10));
                 }
-                g.DrawString("X1", drawFontValueBold, drawBrush, new Point(picImage.Width-19, picImage.Height-25));
+                g.DrawString("X1", drawFontValueBold, drawBrush, new Point(picWidth-20, picHeight - 25));
                 g.DrawString("X2", drawFontValueBold, drawBrush, new Point(3,3));
             }
         }

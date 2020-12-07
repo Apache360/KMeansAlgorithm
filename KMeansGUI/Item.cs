@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace KMeansGUI
 {
-    class Item
+    public class Item
     {
         public string id;
         public double[] point;
@@ -15,6 +15,16 @@ namespace KMeansGUI
         {
             this.id = id;
             this.point = point;
+        }
+
+        public override string ToString()
+        {
+            string str=id+": ";
+            for (int i = 0; i < point.Length; i++)
+            {
+                str += point[i].ToString()+" ";
+            }
+            return str;
         }
     }
 }
