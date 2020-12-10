@@ -10,10 +10,15 @@ namespace KMeansGUI
 
         static Misc()
         {
-            centroidColors = new Color[3];
+            centroidColors = new Color[8];
             centroidColors[0] = Color.Red;
             centroidColors[1] = Color.LimeGreen;
             centroidColors[2] = Color.DodgerBlue;
+            centroidColors[3] = Color.Pink;
+            centroidColors[4] = Color.Orange;
+            centroidColors[5] = Color.Brown;
+            centroidColors[6] = Color.Purple;
+            centroidColors[7] = Color.LightBlue;
         }
 
         public static List<Item> Clone(List<Item> array)

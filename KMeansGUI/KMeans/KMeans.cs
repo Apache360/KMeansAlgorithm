@@ -9,7 +9,7 @@ namespace KMeansGUI
     public class KMeans
     {
         private IDistance _distance;
-        private int _k;
+        private int _centroidsCount;
 
         public event OnUpdateProgress UpdateProgress;
         protected virtual void OnUpdateProgress(KMeansEventArgs eventArgs)
@@ -21,7 +21,7 @@ namespace KMeansGUI
 
         public KMeans(int k, IDistance distance)
         {
-            _k = k;
+            _centroidsCount = k;
             _distance = distance;
         }
 
@@ -33,18 +33,15 @@ namespace KMeansGUI
         public Centroid[] Run(List<Item> dataSet)
         {
             centroidList = new List<Centroid>();
-            for (int i=0;i<_k;i++)
+            for (int i=0;i<_centroidsCount;i++)
             {
                 Centroid centroid = new Centroid(dataSet,Misc.centroidColors[i], centroidList.Count);
                 centroidList.Add(centroid);
             }
-
             OnUpdateProgress(new KMeansEventArgs(centroidList,dataSet));
-
             while (true)
             {
-                foreach (Centroid centroid in centroidList)
-                    centroid.Reset();
+                foreach (Centroid centroid in centroidList)centroid.Reset();
 
                 for (int i = 0; i < dataSet.Count; i++)
                 {
@@ -54,6 +51,20 @@ namespace KMeansGUI
                     for (int k = 0; k < centroidList.Count; k++)
                     {
                         double distance = _distance.Run(centroidList[k].array, item);
+                        switch (k)
+                        {
+                            case 0:
+                                distance *= 0.5;
+                                break;
+                            case 1:
+                                distance *= 1.1;
+                                break;
+                            case 3:
+                                distance *= 1.1;
+                                break;
+                            default:
+                                break;
+                        }
                         if (distance < minDistance)
                         {
                             closestIndex = k;
@@ -63,8 +74,7 @@ namespace KMeansGUI
                     centroidList[closestIndex].addItem(item);
                 }
 
-                foreach (Centroid centroid in centroidList)
-                    centroid.MoveCentroid();
+                foreach (Centroid centroid in centroidList)centroid.MoveCentroid();
 
                 OnUpdateProgress(new KMeansEventArgs(centroidList, null));
 
@@ -78,7 +88,6 @@ namespace KMeansGUI
                 if (!hasChanged)
                     break;
             }
-
             return centroidList.ToArray();
         }
     }

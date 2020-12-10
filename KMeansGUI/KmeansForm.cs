@@ -21,6 +21,7 @@ namespace KMeansGUI
         public KmeansForm()
         {
             InitializeComponent();
+            MinimumSize = new Size(640,540);
         }
 
         private void buttonRandomRun_Click(object sender, EventArgs e)
@@ -109,14 +110,14 @@ namespace KMeansGUI
             Graphics g = e.Graphics;
             if (kmeansEA == null || kmeansEA.CentroidList == null) return;
 
-            foreach(Centroid centroid in kmeansEA.CentroidList)
+            foreach (Centroid centroid in kmeansEA.CentroidList)
                 centroid.DrawMe(e);
 
             if (kmeansEA.Dataset == null) return;
 
-            foreach(Item item in kmeansEA.Dataset)
+            foreach (Item item in kmeansEA.Dataset)
             {
-                g.DrawEllipse(new Pen(Color.Gray, 2.0f), (float)item.point[0], 400-(float)item.point[1], 8, 8);
+                g.DrawEllipse(new Pen(Color.Gray, 2.0f), (float)item.point[0], this.getHeight() - 10 - (float)item.point[1], 6, 6);
             }
         }
 
@@ -160,12 +161,10 @@ namespace KMeansGUI
             dataSetItems = new List<Item>();
             for (int i = 0; i < (int)numericUpDown1.Value; i++)
             {
-                double chance1 = objRandom.NextDouble();
-                //double chance1 = Math.Sin(((objRandom.NextDouble() / (Math.PI * 10)) * 90));
-                double chance2 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90) / 1.5;
-                double chance3 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90) / 1.5;
-                /*double chance2 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90);
-                double chance3 = Math.Sin(((objRandom.NextDouble() * 2 - 1) / (Math.PI * 10)) * 90);*/
+                
+                double chance1 = 1-Math.Pow((objRandom.NextDouble()),2);
+                double chance2 = (1-Math.Sin(((objRandom.NextDouble()) / (Math.PI * 10)) * 90))*2-1;
+                double chance3 = (1-Math.Sin(((objRandom.NextDouble()) / (Math.PI * 10)) * 90)) * 2 - 1;
 
                 double shift1, shift2;
                 if (chance1<0.5)
@@ -180,8 +179,8 @@ namespace KMeansGUI
                 }
 
                 double[] point = new double[2];
-                point[0] = Math.Round(3 * (chance1 + shift1), 3);
-                point[1] = Math.Round(100 * ((1 - chance1) + shift2), 3);
+                point[0] = Math.Round(2 * (chance1 + shift1), 3);
+                point[1] = Math.Round(2 * ((1 - chance1) +shift2), 3);
                 //point[0] = Misc.GenerateRandomDouble(chance2, 0, 3);
                 //point[1] = Misc.GenerateRandomDouble(chance3, 0, 100);
                 Item item = new Item(i.ToString(),point);
@@ -254,6 +253,8 @@ namespace KMeansGUI
             }
             widthScale = width / (maxX1+ 0.1*maxX1);
             heightScale = height / (maxX2+0.1*maxX2);
+            Console.WriteLine(heightScale);
+            Console.WriteLine(height);
             for (int i = 0; i < dataSetItems.Count; i++)
             {
                 dataSetItems[i].point= new double[2] {dataSetItems[i].point[0]* widthScale, dataSetItems[i].point[1]* heightScale };
@@ -303,7 +304,7 @@ namespace KMeansGUI
         private void saveFile()
         {
             SaveFileDialog sfd = new SaveFileDialog();
-            sfd.Filter = "All files|*.*|CSV files|*.csv";
+            sfd.Filter = "CSV files|*.csv";
             bool correctFormatSelected = true;
             if (correctFormatSelected)
             {
@@ -332,7 +333,7 @@ namespace KMeansGUI
         {
             try
             {
-                using (StreamWriter sw = new StreamWriter(file+".csv", false, System.Text.Encoding.Default))
+                using (StreamWriter sw = new StreamWriter(file, false, System.Text.Encoding.Default))
                 {
                     sw.WriteLine(resultDataSet);
                 }
@@ -354,7 +355,18 @@ namespace KMeansGUI
             saveFile();
         }
 
-        private double widthScale = 0, heightScale = 0, maxX1 = 0, maxX2 = 0;
+        public double widthScale = 0, heightScale = 0, maxX1 = 0, maxX2 = 0;
+
+        public int getHeight()
+        {
+            return picImage.Height;
+        }
+
+        public int getWidth()
+        {
+            return picImage.Width;
+        }
+
         public void drawLegend()
         {
             Graphics g = picImage.CreateGraphics();

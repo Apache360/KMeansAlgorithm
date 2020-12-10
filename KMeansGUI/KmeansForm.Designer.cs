@@ -65,7 +65,7 @@
             this.picImage.Location = new System.Drawing.Point(10, 94);
             this.picImage.Margin = new System.Windows.Forms.Padding(2);
             this.picImage.Name = "picImage";
-            this.picImage.Size = new System.Drawing.Size(426, 417);
+            this.picImage.Size = new System.Drawing.Size(400, 400);
             this.picImage.TabIndex = 1;
             this.picImage.TabStop = false;
             this.picImage.Paint += new System.Windows.Forms.PaintEventHandler(this.picImage_Paint);
@@ -85,7 +85,12 @@
             this.numericUpDown1.Location = new System.Drawing.Point(204, 30);
             this.numericUpDown1.Margin = new System.Windows.Forms.Padding(2);
             this.numericUpDown1.Maximum = new decimal(new int[] {
-            5000,
+            10000,
+            0,
+            0,
+            0});
+            this.numericUpDown1.Minimum = new decimal(new int[] {
+            3,
             0,
             0,
             0});
@@ -100,10 +105,10 @@
             // 
             // numericUpDown2
             // 
-            this.numericUpDown2.Location = new System.Drawing.Point(375, 30);
+            this.numericUpDown2.Location = new System.Drawing.Point(349, 30);
             this.numericUpDown2.Margin = new System.Windows.Forms.Padding(2);
             this.numericUpDown2.Maximum = new decimal(new int[] {
-            3,
+            16,
             0,
             0,
             0});
@@ -124,7 +129,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(320, 32);
+            this.label3.Location = new System.Drawing.Point(294, 33);
             this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(51, 13);
@@ -138,7 +143,7 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(630, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(624, 24);
             this.menuStrip1.TabIndex = 7;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -167,10 +172,10 @@
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(441, 57);
+            this.richTextBox1.Location = new System.Drawing.Point(416, 57);
             this.richTextBox1.Name = "richTextBox1";
             this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(177, 453);
+            this.richTextBox1.Size = new System.Drawing.Size(202, 437);
             this.richTextBox1.TabIndex = 8;
             this.richTextBox1.Text = "";
             // 
@@ -191,14 +196,14 @@
             this.textBox1.Location = new System.Drawing.Point(116, 61);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(319, 20);
+            this.textBox1.Size = new System.Drawing.Size(294, 20);
             this.textBox1.TabIndex = 10;
             // 
             // buttonResult
             // 
-            this.buttonResult.Location = new System.Drawing.Point(441, 30);
+            this.buttonResult.Location = new System.Drawing.Point(416, 30);
             this.buttonResult.Name = "buttonResult";
-            this.buttonResult.Size = new System.Drawing.Size(177, 23);
+            this.buttonResult.Size = new System.Drawing.Size(202, 23);
             this.buttonResult.TabIndex = 11;
             this.buttonResult.Text = "Show result";
             this.buttonResult.UseVisualStyleBackColor = true;
@@ -208,7 +213,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(630, 522);
+            this.ClientSize = new System.Drawing.Size(624, 501);
             this.Controls.Add(this.buttonResult);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.buttonRun);

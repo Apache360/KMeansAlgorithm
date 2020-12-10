@@ -13,6 +13,7 @@ namespace KMeansGUI
         public List<Item> closestItemsList;
         public Color color;
         private static Random random = new Random();
+        private KmeansForm kmeansForm = new KmeansForm();
 
         public void DrawMe(PaintEventArgs e)
         {
@@ -22,11 +23,10 @@ namespace KMeansGUI
 
             foreach (Item item in closestItemsList)
             {
-                g.DrawEllipse(new Pen(color, 2.0f), (float)item.point[0], 400-(float)item.point[1], 8, 8);
+                g.DrawEllipse(new Pen(color, 2.0f), (float)item.point[0], kmeansForm.getHeight()-10 - (float)item.point[1], 6, 6);
             }
-
-            g.FillEllipse(new SolidBrush(color), (float)array[0], 400 - (float)array[1], 15, 15);
-            g.DrawEllipse(new Pen(Color.Black, 2.0f), (float)array[0], 400 - (float)array[1], 15, 15);
+            g.FillEllipse(new SolidBrush(color), (float)array[0], kmeansForm.getHeight() - (float)array[1], 15, 15);
+            g.DrawEllipse(new Pen(Color.Black, 2.0f), (float)array[0], kmeansForm.getHeight() - (float)array[1], 15, 15);
         }
 
         public void addItem(Item closestArray)
@@ -42,20 +42,25 @@ namespace KMeansGUI
             List<Tuple<double, double>> minMaxPoints = Misc.GetMinMaxPoints(dataSet);
 
             array = new double[minMaxPoints.Count];
+            int height = kmeansForm.getHeight();
+            int width = kmeansForm.getWidth();
             switch (centroidId)
             {
                 case 0:
-                    array =new double [2]{ random.NextDouble()*400/3, 2 * 400/3+random.NextDouble() * 400 / 3 };
+                    array = new double[2] { random.NextDouble() * width / 3, 2 * height / 3 + random.NextDouble() * height / 3 };
                     break;
                 case 1:
-                    array = new double[2] { 2*400/3+random.NextDouble() * 400 / 3, random.NextDouble() * 400 / 3 };
+                    array = new double[2] { 2 * width / 3 + random.NextDouble() * width / 3, random.NextDouble() * height / 3 };
                     break;
                 case 2:
-                    array = new double[2] { 1 * 400 / 3 + random.NextDouble() * 400 / 3, 1 * 400 / 3 + random.NextDouble() * 400 / 3 };
+                    array = new double[2] { 1 * width / 3 + random.NextDouble() * width / 3, 1 * height / 3 + random.NextDouble() * height / 3 };
                     break;
                 default:
+                    array = new double[2] { random.NextDouble() * width, random.NextDouble() * height };
                     break;
             }
+            _oldItemsList = new List<Item>();
+            closestItemsList = new List<Item>();
 
             /*int i = 0;
             foreach (Tuple<double, double> point in minMaxPoints)
@@ -86,8 +91,6 @@ namespace KMeansGUI
                 i++;
             }*/
 
-            _oldItemsList = new List<Item>();
-            closestItemsList = new List<Item>();
         }
 
         public void MoveCentroid()
@@ -103,6 +106,7 @@ namespace KMeansGUI
                 {
                     sum += closestItemsList[i].point[j];
                 }
+                Console.WriteLine(sum);
                 sum /= closestItemsList.Count;
                 resultVector.Add(sum);
             }
@@ -129,7 +133,6 @@ namespace KMeansGUI
                         break;
                     }
             }
-
             return !result;
         }
 
